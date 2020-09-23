@@ -101,12 +101,15 @@ public:
     name_ = name;
     costmap_ros_ = costmap_ros;
     dwb_plugin_name_ = ns;
+    //H: if no scale setted, set default value to 1.0
     if (!nh->has_parameter(dwb_plugin_name_ + "." + name_ + ".scale")) {
       nh->declare_parameter(
         dwb_plugin_name_ + "." + name_ + ".scale",
         rclcpp::ParameterValue(1.0));
     }
+    //H: get parameter
     nh->get_parameter(dwb_plugin_name_ + "." + name_ + ".scale", scale_);
+    //H: reset the state of the critic 
     onInit();
   }
   virtual void onInit() {}

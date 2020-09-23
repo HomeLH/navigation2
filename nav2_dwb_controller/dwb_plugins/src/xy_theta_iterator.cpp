@@ -96,17 +96,23 @@ bool XYThetaIterator::isValidSpeed(double x, double y, double theta)
 {
   KinematicParameters kinematics = kinematics_handler_->getKinematics();
   double vmag_sq = x * x + y * y;
+  //H: exceed positive max speed
   if (kinematics.getMaxSpeedXY() >= 0.0 && vmag_sq > kinematics.getMaxSpeedXY_SQ() + EPSILON) {
     return false;
   }
+  //H: less than min speed, and no min theta
   if (kinematics.getMinSpeedXY() >= 0.0 && vmag_sq + EPSILON < kinematics.getMinSpeedXY_SQ() &&
     kinematics.getMinSpeedTheta() >= 0.0 && fabs(theta) + EPSILON < kinematics.getMinSpeedTheta())
   {
     return false;
   }
+
+  // idle status
   if (vmag_sq == 0.0 && th_it_->getVelocity() == 0.0) {
     return false;
   }
+
+  // H: TODO what about negative speed of kinematics ?
   return true;
 }
 
@@ -119,6 +125,7 @@ bool XYThetaIterator::isValidVelocity()
 
 bool XYThetaIterator::hasMoreTwists()
 {
+  // H: valid pointer and is not finished(currenct speed exceeds max speed)
   return x_it_ && !x_it_->isFinished();
 }
 
@@ -128,7 +135,7 @@ nav_2d_msgs::msg::Twist2D XYThetaIterator::nextTwist()
   velocity.x = x_it_->getVelocity();
   velocity.y = y_it_->getVelocity();
   velocity.theta = th_it_->getVelocity();
-
+  // H: 
   iterateToValidVelocity();
 
   return velocity;

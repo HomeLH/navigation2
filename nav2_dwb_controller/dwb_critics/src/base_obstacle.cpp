@@ -52,6 +52,7 @@ void BaseObstacleCritic::onInit()
     throw std::runtime_error{"Failed to lock node"};
   }
 
+  //H: Whether to allow for scores to be summed up.
   nav2_util::declare_parameter_if_not_declared(
     node,
     dwb_plugin_name_ + "." + name_ + ".sum_scores", rclcpp::ParameterValue(false));

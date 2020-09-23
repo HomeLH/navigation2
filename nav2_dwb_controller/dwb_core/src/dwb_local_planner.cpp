@@ -399,11 +399,13 @@ DWBLocalPlanner::coreScoringAlgorithm(
 
   traj_generator_->startNewIteration(velocity);
   while (traj_generator_->hasMoreTwists()) {
+    // H: return current Twist2D, iterate into the next Twsit2D
     twist = traj_generator_->nextTwist();
     traj = traj_generator_->generateTrajectory(pose, velocity, twist);
 
     try {
       dwb_msgs::msg::TrajectoryScore score = scoreTrajectory(traj, best.total);
+      // H: count
       tracker.addLegalTrajectory();
       if (results) {
         results->twists.push_back(score);
@@ -464,7 +466,8 @@ DWBLocalPlanner::scoreTrajectory(
     dwb_msgs::msg::CriticScore cs;
     cs.name = critic->getName();
     cs.scale = critic->getScale();
-
+    
+    //H: skip scale == 0
     if (cs.scale == 0.0) {
       score.scores.push_back(cs);
       continue;
@@ -472,9 +475,11 @@ DWBLocalPlanner::scoreTrajectory(
 
     double critic_score = critic->scoreTrajectory(traj);
     cs.raw_score = critic_score;
+    // H: raw scores
     score.scores.push_back(cs);
     score.total += critic_score * cs.scale;
     if (short_circuit_trajectory_evaluation_ && best_score > 0 && score.total > best_score) {
+      // H: early stopping for performance
       // since we keep adding positives, once we are worse than the best, we will stay worse
       break;
     }

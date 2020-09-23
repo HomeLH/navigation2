@@ -52,6 +52,7 @@ void GoalAlignCritic::onInit()
     throw std::runtime_error{"Failed to lock node"};
   }
 
+  // Point in front of robot to look ahead to compute angular change from.
   forward_point_distance_ = nav_2d_utils::searchAndGetParam(
     node,
     dwb_plugin_name_ + "." + name_ + ".forward_point_distance", 0.325);
