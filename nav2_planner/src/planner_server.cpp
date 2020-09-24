@@ -91,12 +91,14 @@ PlannerServer::on_configure(const rclcpp_lifecycle::State & state)
     try {
       planner_types_[i] = nav2_util::get_plugin_type_param(
         node, planner_ids_[i]);
+        // load global planner plugin
       nav2_core::GlobalPlanner::Ptr planner =
         gp_loader_.createUniqueInstance(planner_types_[i]);
       RCLCPP_INFO(
         get_logger(), "Created global planner plugin %s of type %s",
         planner_ids_[i].c_str(), planner_types_[i].c_str());
       planner->configure(node, planner_ids_[i], tf_, costmap_ros_);
+      // managed by PlannerServer
       planners_.insert({planner_ids_[i], planner});
     } catch (const pluginlib::PluginlibException & ex) {
       RCLCPP_FATAL(
@@ -146,12 +148,14 @@ PlannerServer::on_activate(const rclcpp_lifecycle::State & state)
   action_server_->activate();
   costmap_ros_->on_activate(state);
 
+  //H: enable global planner
   PlannerMap::iterator it;
   for (it = planners_.begin(); it != planners_.end(); ++it) {
     it->second->activate();
   }
 
   // create bond connection
+  // H:TODO? how about createBond();
   createBond();
 
   return nav2_util::CallbackReturn::SUCCESS;
@@ -225,6 +229,7 @@ PlannerServer::computePlan()
       return;
     }
 
+    // H: can not get starting robot pose; retry;
     geometry_msgs::msg::PoseStamped start;
     if (!costmap_ros_->getRobotPose(start)) {
       action_server_->terminate_current();
@@ -258,6 +263,7 @@ PlannerServer::computePlan()
     auto cycle_duration = steady_clock_.now() - start_time;
     result->planning_time = cycle_duration;
 
+    //H: how about this operation for comparing two double variable;
     if (max_planner_duration_ && cycle_duration.seconds() > max_planner_duration_) {
       RCLCPP_WARN(
         get_logger(),
@@ -288,6 +294,7 @@ PlannerServer::getPlan(
     "(%.2f, %.2f).", start.pose.position.x, start.pose.position.y,
     goal.pose.position.x, goal.pose.position.y);
 
+  // ensure working planner
   if (planners_.find(planner_id) != planners_.end()) {
     return planners_[planner_id]->createPlan(start, goal);
   } else {
@@ -304,7 +311,7 @@ PlannerServer::getPlan(
         planner_ids_concat_.c_str());
     }
   }
-
+  // no valid planner, return emptry path
   return nav_msgs::msg::Path();
 }
 
@@ -313,6 +320,7 @@ PlannerServer::publishPlan(const nav_msgs::msg::Path & path)
 {
   auto msg = std::make_unique<nav_msgs::msg::Path>(path);
   if (plan_publisher_->is_activated() && plan_publisher_->get_subscription_count() > 0) {
+    // H: move msg(unique_ptr)
     plan_publisher_->publish(std::move(msg));
   }
 }
