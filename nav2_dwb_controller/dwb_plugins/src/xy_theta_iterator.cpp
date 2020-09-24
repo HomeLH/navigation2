@@ -51,13 +51,16 @@ void XYThetaIterator::initialize(
   const std::string & plugin_name)
 {
   kinematics_handler_ = kinematics;
-
+  // Number of velocity samples in the X velocity direction.
   nav2_util::declare_parameter_if_not_declared(
     nh,
     plugin_name + ".vx_samples", rclcpp::ParameterValue(20));
+  // Number of velocity samples in the Y velocity direction.
   nav2_util::declare_parameter_if_not_declared(
     nh,
     plugin_name + ".vy_samples", rclcpp::ParameterValue(5));
+
+  // Number of velocity samples in the angular direction.
   nav2_util::declare_parameter_if_not_declared(
     nh,
     plugin_name + ".vtheta_samples", rclcpp::ParameterValue(20));

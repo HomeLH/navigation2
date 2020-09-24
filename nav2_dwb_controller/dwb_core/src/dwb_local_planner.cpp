@@ -349,6 +349,9 @@ DWBLocalPlanner::computeVelocityCommands(
   }
 
   try {
+    // dwb: implementation of core algorithm
+    // best data structure
+    // Msg: TrajectoryScore{Trajectory2D{Twist2D, Duration[], Pose2D[]},CriticScore[]{string, float32, float32},float32}
     dwb_msgs::msg::TrajectoryScore best = coreScoringAlgorithm(pose.pose, velocity, results);
 
     // Return Value
@@ -396,7 +399,10 @@ DWBLocalPlanner::coreScoringAlgorithm(
   best.total = -1;
   worst.total = -1;
   IllegalTrajectoryTracker tracker;
-
+  
+  // traj_generator_ instantiated and initialized in function this->configure with class loader
+  // TrajectoryGenerator interface in dwb_core/trajectory_generator.hpp
+  // implementation in dwb_plugins
   traj_generator_->startNewIteration(velocity);
   while (traj_generator_->hasMoreTwists()) {
     // H: return current Twist2D, iterate into the next Twsit2D

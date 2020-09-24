@@ -138,6 +138,8 @@ std::vector<double> StandardTrajectoryGenerator::getTimeSteps(
         projected_angular_distance / angular_granularity_));
     steps.resize(num_steps);
   }
+
+// size is zero, step is sim_time_
   if (steps.size() == 0) {
     steps.resize(1);
   }
@@ -204,6 +206,9 @@ geometry_msgs::msg::Pose2D StandardTrajectoryGenerator::computeNewPosition(
   const geometry_msgs::msg::Pose2D start_pose,
   const nav_2d_msgs::msg::Twist2D & vel, const double dt)
 {
+  // simple motion model
+  // cos(pi/2 + theta) = -sin(theta)
+  // sin(pi/2 + theta) = cos(theta)
   geometry_msgs::msg::Pose2D new_pose;
   new_pose.x = start_pose.x +
     (vel.x * cos(start_pose.theta) + vel.y * cos(M_PI_2 + start_pose.theta)) * dt;
